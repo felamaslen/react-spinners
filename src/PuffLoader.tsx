@@ -10,13 +10,14 @@ const puff = [
 ];
 
 function PuffLoader({
+  animationDelay = 0,
   loading = true,
   color = "#000000",
   speedMultiplier = 1,
   css = {},
   size = 60,
   ...additionalprops
-}: LoaderSizeProps): JSX.Element | null {
+}: LoaderSizeProps & { animationDelay?: number }): JSX.Element | null {
   const wrapper: React.CSSProperties = {
     display: "inherit",
     position: "relative",
@@ -40,7 +41,7 @@ function PuffLoader({
       animationDuration: `${2 / speedMultiplier}s`,
       animationIterationCount: "infinite",
       animationTimingFunction: "cubic-bezier(0.165, 0.84, 0.44, 1), cubic-bezier(0.3, 0.61, 0.355, 1)",
-      animationDelay: i === 1 ? "1s" : "0s",
+      animationDelay: `${(i === 1 ? 1 : 0) + animationDelay}s`,
     };
   };
 
