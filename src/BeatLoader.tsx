@@ -1,44 +1,54 @@
-/** @jsx jsx */
 import * as React from "react";
-import { keyframes, css, jsx, SerializedStyles } from "@emotion/core";
 
-import { sizeMarginDefaults, cssValue } from "./helpers";
-import { LoaderSizeMarginProps } from "./interfaces";
+import { cssValue } from "./helpers/unitConverter";
 
-const beat = keyframes`
-  50% {transform: scale(0.75);opacity: 0.2}
-  100% {transform: scale(1);opacity: 1}
-`;
+import { createAnimation } from "./helpers/animation";
+import { LoaderSizeMarginProps } from "./helpers/props";
 
-class Loader extends React.PureComponent<LoaderSizeMarginProps> {
-  public static defaultProps = sizeMarginDefaults(15);
+const beat = createAnimation(
+  "BeatLoader",
+  "50% {transform: scale(0.75);opacity: 0.2} 100% {transform: scale(1);opacity: 1}",
+  "beat"
+);
 
-  public style = (i: number): SerializedStyles => {
-    const { color, size, margin } = this.props;
-
-    return css`
-      display: inline-block;
-      background-color: ${color};
-      width: ${cssValue(size || Loader.defaultProps.size)};
-      height: ${cssValue(size || Loader.defaultProps.size)};
-      margin: ${cssValue(margin || Loader.defaultProps.margin)};
-      border-radius: 100%;
-      animation: ${beat} 0.7s ${i % 2 ? "0s" : "0.35s"} infinite linear;
-      animation-fill-mode: both;
-    `;
+function BeatLoader({
+  loading = true,
+  color = "#000000",
+  speedMultiplier = 1,
+  cssOverride = {},
+  size = 15,
+  margin = 2,
+  ...additionalprops
+}: LoaderSizeMarginProps): JSX.Element | null {
+  const wrapper: React.CSSProperties = {
+    display: "inherit",
+    ...cssOverride,
   };
 
-  public render(): JSX.Element | null {
-    const { loading, css } = this.props;
+  const style = (i: number): React.CSSProperties => {
+    return {
+      display: "inline-block",
+      backgroundColor: color,
+      width: cssValue(size),
+      height: cssValue(size),
+      margin: cssValue(margin),
+      borderRadius: "100%",
+      animation: `${beat} ${0.7 / speedMultiplier}s ${i % 2 ? "0s" : `${0.35 / speedMultiplier}s`} infinite linear`,
+      animationFillMode: "both",
+    };
+  };
 
-    return loading ? (
-      <span css={[css]}>
-        <span css={this.style(1)} />
-        <span css={this.style(2)} />
-        <span css={this.style(3)} />
-      </span>
-    ) : null;
+  if (!loading) {
+    return null;
   }
+
+  return (
+    <span style={wrapper} {...additionalprops}>
+      <span style={style(1)} />
+      <span style={style(2)} />
+      <span style={style(3)} />
+    </span>
+  );
 }
 
-export default Loader;
+export default BeatLoader;

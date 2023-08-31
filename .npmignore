@@ -16,7 +16,6 @@ docs
 webpack.config.*
 prettier.config.*
 template.html
-__tests__
 .github
 .circleci
 .eslintrc.*
@@ -27,3 +26,7 @@ jest.config.*
 CODEOWNERS
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
+stories
+yarn-error.log
+.storybook
+.prettierignore

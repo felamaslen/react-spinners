@@ -1,12 +1,12 @@
-/** @jsx jsx */
 import * as React from "react";
-import { keyframes, css, jsx, SerializedStyles } from "@emotion/core";
 
-import { sizeDefaults, cssValue } from "./helpers";
-import { LoaderSizeProps } from "./interfaces";
+import { cssValue } from "./helpers/unitConverter";
+import { LoaderSizeProps } from "./helpers/props";
+import { createAnimation } from "./helpers/animation";
 
-const climbingBox = keyframes`
-  0% {transform:translate(0, -1em) rotate(-45deg)}
+const climbingBox = createAnimation(
+  "ClimbingBoxLoader",
+  `0% {transform:translate(0, -1em) rotate(-45deg)}
   5% {transform:translate(0, -1em) rotate(-50deg)}
   20% {transform:translate(1em, -2em) rotate(47deg)}
   25% {transform:translate(1em, -2em) rotate(45deg)}
@@ -16,79 +16,73 @@ const climbingBox = keyframes`
   55% {transform:translate(2em, -3em) rotate(130deg)}
   70% {transform:translate(3em, -4em) rotate(217deg)}
   75% {transform:translate(3em, -4em) rotate(220deg)}
-  100% {transform:translate(0, -1em) rotate(-225deg)}
-`;
+  100% {transform:translate(0, -1em) rotate(-225deg)}`,
+  "climbingBox"
+);
 
-class Loader extends React.PureComponent<LoaderSizeProps> {
-  public static defaultProps = sizeDefaults(15);
-
-  public style = (): SerializedStyles => {
-    const { color } = this.props;
-
-    return css`
-      position: absolute;
-      left: 0;
-      bottom: -0.1em;
-      height: 1em;
-      width: 1em;
-      background-color: transparent;
-      border-radius: 15%;
-      border: 0.25em solid ${color};
-      transform: translate(0, -1em) rotate(-45deg);
-      animation-fill-mode: both;
-      animation: ${climbingBox} 2.5s infinite cubic-bezier(0.79, 0, 0.47, 0.97);
-    `;
+function ClimbingBoxLoader({
+  loading = true,
+  color = "#000000",
+  speedMultiplier = 1,
+  cssOverride = {},
+  size = 15,
+  ...additionalprops
+}: LoaderSizeProps): JSX.Element | null {
+  const container: React.CSSProperties = {
+    display: "inherit",
+    position: "relative",
+    width: "7.1em",
+    height: "7.1em",
+    ...cssOverride,
   };
 
-  public wrapper = (): SerializedStyles => {
-    const { size } = this.props;
-
-    return css`
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin-top: -2.7em;
-      margin-left: -2.7em;
-      width: 5.4em;
-      height: 5.4em;
-      font-size: ${cssValue(size || Loader.defaultProps.size)};
-    `;
+  const wrapper: React.CSSProperties = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: "-2.7em",
+    marginLeft: "-2.7em",
+    width: "5.4em",
+    height: "5.4em",
+    fontSize: cssValue(size),
   };
 
-  public hill = (): SerializedStyles => {
-    const { color } = this.props;
-
-    return css`
-      position: absolute;
-      width: 7.1em;
-      height: 7.1em;
-      top: 1.7em;
-      left: 1.7em;
-      border-left: 0.25em solid ${color};
-      transform: rotate(45deg);
-    `;
+  const style: React.CSSProperties = {
+    position: "absolute",
+    left: "0",
+    bottom: "-0.1em",
+    height: "1em",
+    width: "1em",
+    backgroundColor: "transparent",
+    borderRadius: "15%",
+    border: `0.25em solid ${color}`,
+    transform: "translate(0, -1em) rotate(-45deg)",
+    animationFillMode: "both",
+    animation: `${climbingBox} ${2.5 / speedMultiplier}s infinite cubic-bezier(0.79, 0, 0.47, 0.97)`,
   };
 
-  public container = (): SerializedStyles => {
-    return css`
-      position: relative;
-      width: 7.1em;
-      height: 7.1em;
-    `;
+  const hill: React.CSSProperties = {
+    position: "absolute",
+    width: "7.1em",
+    height: "7.1em",
+    top: "1.7em",
+    left: "1.7em",
+    borderLeft: `0.25em solid ${color}`,
+    transform: "rotate(45deg)",
   };
 
-  public render(): JSX.Element | null {
-    const { loading, css } = this.props;
-
-    return loading ? (
-      <span css={[this.container(), css]}>
-        <span css={this.wrapper()}>
-          <span css={this.style()} />
-          <span css={this.hill()} />
-        </span>
-      </span>
-    ) : null;
+  if (!loading) {
+    return null;
   }
+
+  return (
+    <span style={container} {...additionalprops}>
+      <span style={wrapper}>
+        <span style={style} />
+        <span style={hill} />
+      </span>
+    </span>
+  );
 }
 
-export default Loader;
+export default ClimbingBoxLoader;

@@ -7,4 +7,15 @@
 npm-debug.log
 node_modules
 dist
+docs/javascripts
 docs/js
+docs/index.html
+docs/storybook
+
+cjs
+esm
+umd
+.yarn/cache
+.yarn/install-state.gz
+stories/*.tsx
+storybook-static

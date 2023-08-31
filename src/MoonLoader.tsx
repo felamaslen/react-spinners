@@ -1,82 +1,68 @@
-/** @jsx jsx */
 import * as React from "react";
-import { keyframes, css, jsx, SerializedStyles } from "@emotion/core";
 
-import { sizeDefaults, parseLengthAndUnit, cssValue } from "./helpers";
-import { LoaderSizeProps } from "./interfaces";
+import { parseLengthAndUnit, cssValue } from "./helpers/unitConverter";
+import { LoaderSizeProps } from "./helpers/props";
+import { createAnimation } from "./helpers/animation";
 
-const moon = keyframes`
-  100% {transform: rotate(360deg)}
-`;
+const moon = createAnimation("MoonLoader", "100% {transform: rotate(360deg)}", "moon");
 
-class Loader extends React.PureComponent<LoaderSizeProps> {
-  public static defaultProps = sizeDefaults(60);
+function MoonLoader({
+  loading = true,
+  color = "#000000",
+  speedMultiplier = 1,
+  cssOverride = {},
+  size = 60,
+  ...additionalprops
+}: LoaderSizeProps): JSX.Element | null {
+  const { value, unit } = parseLengthAndUnit(size);
+  const moonSize = value / 7;
 
-  public moonSize = (): number => {
-    const { size } = this.props;
-    const { value } = parseLengthAndUnit(size || Loader.defaultProps.size);
-
-    return value / 7;
+  const wrapper: React.CSSProperties = {
+    display: "inherit",
+    position: "relative",
+    width: `${`${value + moonSize * 2}${unit}`}`,
+    height: `${`${value + moonSize * 2}${unit}`}`,
+    animation: `${moon} ${0.6 / speedMultiplier}s 0s infinite linear`,
+    animationFillMode: "forwards",
+    ...cssOverride,
   };
 
-  public ballStyle = (size: number): SerializedStyles => {
-    return css`
-      width: ${cssValue(size)};
-      height: ${cssValue(size)};
-      border-radius: 100%;
-    `;
+  const ballStyle = (size: number): React.CSSProperties => {
+    return {
+      width: cssValue(size),
+      height: cssValue(size),
+      borderRadius: "100%",
+    };
   };
 
-  public wrapper = (): SerializedStyles => {
-    const { size } = this.props;
-    const { value, unit } = parseLengthAndUnit(size || Loader.defaultProps.size);
-
-    return css`
-      position: relative;
-      width: ${`${value + this.moonSize() * 2}${unit}`};
-      height: ${`${value + this.moonSize() * 2}${unit}`};
-      animation: ${moon} 0.6s 0s infinite linear;
-      animation-fill-mode: forwards;
-    `;
+  const ball: React.CSSProperties = {
+    ...ballStyle(moonSize),
+    backgroundColor: `${color}`,
+    opacity: "0.8",
+    position: "absolute",
+    top: `${`${value / 2 - moonSize / 2}${unit}`}`,
+    animation: `${moon} ${0.6 / speedMultiplier}s 0s infinite linear`,
+    animationFillMode: "forwards",
   };
 
-  public ball = (): SerializedStyles => {
-    const { color, size } = this.props;
-    const { value, unit } = parseLengthAndUnit(size || Loader.defaultProps.size);
-
-    return css`
-      ${this.ballStyle(this.moonSize())};
-      background-color: ${color};
-      opacity: 0.8;
-      position: absolute;
-      top: ${`${value / 2 - this.moonSize() / 2}${unit}`};
-      animation: ${moon} 0.6s 0s infinite linear;
-      animation-fill-mode: forwards;
-    `;
+  const circle: React.CSSProperties = {
+    ...ballStyle(value),
+    border: `${moonSize}px solid ${color}`,
+    opacity: "0.1",
+    boxSizing: "content-box",
+    position: "absolute",
   };
 
-  public circle = (): SerializedStyles => {
-    const { size, color } = this.props;
-    const { value } = parseLengthAndUnit(size || Loader.defaultProps.size);
-
-    return css`
-      ${this.ballStyle(value)};
-      border: ${this.moonSize()}px solid ${color};
-      opacity: 0.1;
-      box-sizing: content-box;
-    `;
-  };
-
-  public render(): JSX.Element | null {
-    const { loading, css } = this.props;
-
-    return loading ? (
-      <span css={[this.wrapper(), css]}>
-        <span css={this.ball()} />
-        <span css={this.circle()} />
-      </span>
-    ) : null;
+  if (!loading) {
+    return null;
   }
+
+  return (
+    <span style={wrapper} {...additionalprops}>
+      <span style={ball} />
+      <span style={circle} />
+    </span>
+  );
 }
 
-export default Loader;
+export default MoonLoader;

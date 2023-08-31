@@ -1,46 +1,55 @@
-/** @jsx jsx */
 import * as React from "react";
-import { keyframes, css, jsx, SerializedStyles } from "@emotion/core";
 
-import { sizeMarginDefaults } from "./helpers/proptypes";
-import { LoaderSizeMarginProps } from "./interfaces";
-import { cssValue } from "./helpers";
+import { LoaderSizeMarginProps } from "./helpers/props";
+import { createAnimation } from "./helpers/animation";
+import { cssValue } from "./helpers/unitConverter";
 
-const sync = keyframes`
-  33% {transform: translateY(10px)}
+const sync = createAnimation(
+  "SyncLoader",
+  `33% {transform: translateY(10px)}
   66% {transform: translateY(-10px)}
-  100% {transform: translateY(0)}
-`;
+  100% {transform: translateY(0)}`,
+  "sync"
+);
 
-class Loader extends React.PureComponent<LoaderSizeMarginProps> {
-  public static defaultProps = sizeMarginDefaults(15);
-
-  public style = (i: number): SerializedStyles => {
-    const { color, size, margin } = this.props;
-
-    return css`
-      background-color: ${color};
-      width: ${cssValue(size || Loader.defaultProps.size)};
-      height: ${cssValue(size || Loader.defaultProps.size)};
-      margin: ${cssValue(margin || Loader.defaultProps.margin)};
-      border-radius: 100%;
-      display: inline-block;
-      animation: ${sync} 0.6s ${i * 0.07}s infinite ease-in-out;
-      animation-fill-mode: both;
-    `;
+function SyncLoader({
+  loading = true,
+  color = "#000000",
+  speedMultiplier = 1,
+  cssOverride = {},
+  size = 15,
+  margin = 2,
+  ...additionalprops
+}: LoaderSizeMarginProps): JSX.Element | null {
+  const wrapper: React.CSSProperties = {
+    display: "inherit",
+    ...cssOverride,
   };
 
-  public render(): JSX.Element | null {
-    const { loading, css } = this.props;
+  const style = (i: number): React.CSSProperties => {
+    return {
+      backgroundColor: color,
+      width: cssValue(size),
+      height: cssValue(size),
+      margin: cssValue(margin),
+      borderRadius: "100%",
+      display: "inline-block",
+      animation: `${sync} ${0.6 / speedMultiplier}s ${i * 0.07}s infinite ease-in-out`,
+      animationFillMode: "both",
+    };
+  };
 
-    return loading ? (
-      <span css={[css]}>
-        <span css={this.style(1)} />
-        <span css={this.style(2)} />
-        <span css={this.style(3)} />
-      </span>
-    ) : null;
+  if (!loading) {
+    return null;
   }
+
+  return (
+    <span style={wrapper} {...additionalprops}>
+      <span style={style(1)} />
+      <span style={style(2)} />
+      <span style={style(3)} />
+    </span>
+  );
 }
 
-export default Loader;
+export default SyncLoader;

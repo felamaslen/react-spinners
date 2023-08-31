@@ -1,0 +1,8 @@
+.yarn
+node_modules
+yarn.lock
+coverage
+docs/storybook
+docs/javascripts
+docs/js
+template.html

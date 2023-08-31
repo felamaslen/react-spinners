@@ -1,41 +1,44 @@
-/** @jsx jsx */
 import * as React from "react";
-import { keyframes, css, jsx, SerializedStyles } from "@emotion/core";
 
-import { sizeDefaults, cssValue } from "./helpers";
-import { LoaderSizeProps } from "./interfaces";
+import { cssValue } from "./helpers/unitConverter";
+import { LoaderSizeProps } from "./helpers/props";
+import { createAnimation } from "./helpers/animation";
 
-const clip = keyframes`
-  0% {transform: rotate(0deg) scale(1)}
-  50% {transform: rotate(180deg) scale(0.8)}
-  100% {transform: rotate(360deg) scale(1)}
-`;
+const clip = createAnimation(
+  "ClipLoader",
+  "0% {transform: rotate(0deg) scale(1)} 50% {transform: rotate(180deg) scale(0.8)} 100% {transform: rotate(360deg) scale(1)}",
+  "clip"
+);
 
-class Loader extends React.PureComponent<LoaderSizeProps> {
-  public static defaultProps = sizeDefaults(35);
-
-  public style = (): SerializedStyles => {
-    const { size, color } = this.props;
-
-    return css`
-      background: transparent !important;
-      width: ${cssValue(size || Loader.defaultProps.size)};
-      height: ${cssValue(size || Loader.defaultProps.size)};
-      border-radius: 100%;
-      border: 2px solid;
-      border-color: ${color};
-      border-bottom-color: transparent;
-      display: inline-block;
-      animation: ${clip} 0.75s 0s infinite linear;
-      animation-fill-mode: both;
-    `;
+function ClipLoader({
+  loading = true,
+  color = "#000000",
+  speedMultiplier = 1,
+  cssOverride = {},
+  size = 35,
+  ...additionalprops
+}: LoaderSizeProps): JSX.Element | null {
+  const style: React.CSSProperties = {
+    background: "transparent !important",
+    width: cssValue(size),
+    height: cssValue(size),
+    borderRadius: "100%",
+    border: "2px solid",
+    borderTopColor: color,
+    borderBottomColor: "transparent",
+    borderLeftColor: color,
+    borderRightColor: color,
+    display: "inline-block",
+    animation: `${clip} ${0.75 / speedMultiplier}s 0s infinite linear`,
+    animationFillMode: "both",
+    ...cssOverride,
   };
 
-  public render(): JSX.Element | null {
-    const { loading, css } = this.props;
-
-    return loading ? <span css={[this.style(), css]} /> : null;
+  if (!loading) {
+    return null;
   }
+
+  return <span style={style} {...additionalprops} />;
 }
 
-export default Loader;
+export default ClipLoader;
